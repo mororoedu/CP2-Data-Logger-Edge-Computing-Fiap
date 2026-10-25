@@ -16,6 +16,68 @@ DHT dht(DHTPIN, DHTTYPE);
 LiquidCrystal_I2C lcd(0x27, 16, 2); // Endereço de acesso: 0x3F ou 0x27
 RTC_DS1307 RTC;
 
+// ===================== LOGO DO GRUPO (HELIOS) =====================
+// Cada caractere especial do LCD é uma grade de 5x8 pontos.
+// Cada linha "B....." diz quais pontos acendem (1) e quais ficam apagados (0).
+// O sol é formado por 4 caracteres: TL (cima-esquerda), TR (cima-direita),
+// BL (baixo-esquerda) e BR (baixo-direita).
+// Esses desenhos ficam na memória do LCD, não usam a EEPROM.
+byte sol_TL_Aberto[8] = {
+  B00000,
+  B10001,
+  B01001,
+  B00111,
+  B01010,
+  B11000,
+  B01010,
+  B01001
+};
+
+byte sol_TR_Aberto[8] = {
+  B00000,
+  B10001,
+  B10010,
+  B11100,
+  B01010,
+  B00011,
+  B01010,
+  B10010
+};
+
+byte sol_BL[8] = {
+  B01000,
+  B00111,
+  B01001,
+  B10001,
+  B00000,
+  B00000,
+  B00000,
+  B00000
+};
+
+byte sol_BR[8] = {
+  B00010,
+  B11100,
+  B10010,
+  B10001,
+  B00000,
+  B00000,
+  B00000,
+  B00000
+};
+
+// Mesmo desenho do TL, mas com o olho fechado (para a piscada)
+byte sol_TL_Pisca[8] = {
+  B00000,
+  B10001,
+  B01001,
+  B00111,
+  B01100,
+  B11010,
+  B01010,
+  B01001
+};
+
 /* ===================== OTIMIZAÇÃO DA EEPROM =====================
    A EEPROM do Arduino Uno tem só 1024 bytes.
 
@@ -59,6 +121,7 @@ void setup() {
     Serial.begin(9600);
     lcd.init();   // Inicialização do LCD
     lcd.backlight();  // Ligando o backlight do LCD
+    mostrarLogo();    // Animação da logo HELIOS ao ligar
     RTC.begin();    // Inicialização do Relógio em Tempo Real
     RTC.adjust(DateTime(F(__DATE__), F(__TIME__)));
     // RTC.adjust(DateTime(2024, 5, 6, 08, 15, 00));  // Ajustar a data e hora apropriadas uma vez inicialmente, depois comentar
@@ -191,4 +254,61 @@ void get_log() {
             Serial.println(" %");
         }
     }
+}
+
+// Desenha o sol (4 caracteres) com o canto de cima-esquerda em (col, lin)
+void desenharSol(int col, int lin) {
+    lcd.setCursor(col, lin);
+    lcd.write(byte(0));
+    lcd.setCursor(col + 1, lin);
+    lcd.write(byte(1));
+
+    lcd.setCursor(col, lin + 1);
+    lcd.write(byte(2));
+    lcd.setCursor(col + 1, lin + 1);
+    lcd.write(byte(3));
+}
+
+// Animação da logo: o sol nasce, pisca e se põe ao lado do nome HELIOS
+void mostrarLogo() {
+    // Grava os desenhos nas posições 0 a 3 da memória do LCD
+    lcd.createChar(0, sol_TL_Aberto);
+    lcd.createChar(1, sol_TR_Aberto);
+    lcd.createChar(2, sol_BL);
+    lcd.createChar(3, sol_BR);
+
+    // 1. O sol nasce e "HELIOS" aparece junto
+    lcd.clear();
+    lcd.setCursor(0, 0); lcd.print("HELIOS");
+    desenharSol(10, 1);
+    delay(800);
+
+    // Sobe para o centro
+    lcd.clear();
+    lcd.setCursor(0, 0); lcd.print("HELIOS");
+    desenharSol(10, 0);
+    delay(1200);
+
+    // 2. Dá uma piscada com 1 olho
+    lcd.createChar(0, sol_TL_Pisca);
+    lcd.clear();
+    lcd.setCursor(0, 0); lcd.print("HELIOS");
+    desenharSol(10, 0);
+    delay(300);
+
+    // Abre o olho novamente
+    lcd.createChar(0, sol_TL_Aberto);
+    lcd.clear();
+    lcd.setCursor(0, 0); lcd.print("HELIOS");
+    desenharSol(10, 0);
+    delay(1200);
+
+    // 3. O sol se põe
+    lcd.clear();
+    lcd.setCursor(0, 0); lcd.print("HELIOS");
+    desenharSol(10, 1);
+    delay(800);
+
+    // Limpa a tela para começar o data logger
+    lcd.clear();
 }
