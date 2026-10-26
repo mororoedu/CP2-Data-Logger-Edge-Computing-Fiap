@@ -3,6 +3,7 @@
 Projeto de um **Data Logger** (registrador de dados) de temperatura e umidade com Arduino, desenvolvido como evolução do projeto de Edge Computing da **FIAP**.
 
 * **Simulação no Wokwi:** https://wokwi.com/projects/478696391250198529
+* **Video no youtub explicando o projeto:** https://youtube.com/shorts/jYuTaj59wWM?is=irxWn7SbHWnUutcb
 
 ## Descrição do projeto
 
